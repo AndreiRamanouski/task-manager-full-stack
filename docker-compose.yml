@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  task-manager-frontend:
+    image: task-manager-frontend:0.0.1-SNAPSHOT
+    build:
+      context: task-manager-frontend-final
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    restart: always
+    depends_on:
+      - task-manager
+    networks:
+      - fullstack-application-network
+
+  db:
+    image: 'postgres'
+    container_name: db
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=task_management
+    volumes:
+      - postgres-db-data:/var/lib/postgres/data
+    networks:
+      - fullstack-application-network
+
+  task-manager:
+    image: task-manager:0.0.1-RELEASE
+    build:
+      context: task-manager-final
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - RDS_HOSTNAME=db
+      - RDS_PORT=5432
+      - RDS_DB_NAME=task_management
+      - RDS_USERNAME=postgres
+      - RDS_PASSWORD=secret
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - fullstack-application-network
+
+volumes:
+  postgres-db-data:
+
+networks:
+  fullstack-application-network:
